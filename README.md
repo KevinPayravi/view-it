@@ -1,6 +1,6 @@
 # View it
 
-View it! is a tool that shows Wikipedia readers and editors relevant Wikimedia Commons media depicting—or otherwise related to—the article they are reading. View our [documentation on Meta wiki](https://meta.wikimedia.org/wiki/Main_Page) for more information.
+View it! is a tool that shows Wikipedia readers and editors relevant Wikimedia Commons media depicting—or otherwise related to—the article they are reading. View our [documentation on Meta wiki](https://meta.wikimedia.org/wiki/View_it!_Tool) for more information.
 
 The tool is in active develop. Frequent changes should be expected through at least the end of 2022.
 
