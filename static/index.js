@@ -9,18 +9,6 @@ const NUM_RESULTS = 20;
 const USER_AGENT = 'View-it! [In Development] (https://view-it.toolforge.org/)';
 const ORIGIN = '*';
 
-// Filters:
-const FILTER_DEPICTS_OR_LINKED = 'custommatch:depicts_or_linked_from=';
-const FILTER_DEPICTS = 'haswbstatement:P180=';
-const FILTER_MAIN_SUBJECT = 'haswbstatement:P921=';
-const FILTER_CREATOR = 'haswbstatement:P170=';
-const FILTER_QUALITY = 'haswbstatement:P6731=Q63348069';
-const FILTER_VALUED = 'haswbstatement:P6731=Q63348040';
-const FILTER_FEATURED = 'haswbstatement:P6731=Q63348049';
-const FILTER_SMALL = 'fileres:<500';
-const FILTER_MEDIUM = 'fileres:500,1000';
-const FILTER_LARGE = 'fileres:>1000';
-
 // Return if value is integer:
 function isInt(value) {
   return !isNaN(value) &&
@@ -50,70 +38,6 @@ function searchFromForm() {
   }
 
   return false;
-}
-
-// Build URL parameters from selected filters:
-function applyFilters(qNum) {
-  let filterString = '';
-  let url = new URL(window.location.href);
-
-  // Property
-  let property = url.searchParams.get("property");
-  switch (property) {
-    case 'depicts':
-      filterString += ' ' + FILTER_DEPICTS + qNum;
-      break;
-    case 'main':
-      filterString += ' ' + FILTER_MAIN_SUBJECT + qNum;
-      break;
-    case 'creator':
-      filterString += ' ' + FILTER_CREATOR + qNum;
-      break;
-    default:
-      filterString += ' ' + FILTER_DEPICTS_OR_LINKED + qNum;
-  }
-
-  // Resolution
-  let resolution = url.searchParams.get("resolution");
-  if (resolution) {
-    switch (resolution) {
-      case 'small':
-        filterString += ' ' + FILTER_SMALL;
-        break;
-      case 'medium':
-        filterString += ' ' + FILTER_MEDIUM;
-        break;
-      case 'large':
-        filterString += ' ' + FILTER_LARGE;
-        break;
-      default:
-    }
-  }
-
-  // Assessment
-  let assessment = url.searchParams.get("assessment");
-  if (assessment) {
-    switch (assessment) {
-      case 'featured':
-        filterString += ' ' + FILTER_FEATURED;
-        break;
-      case 'quality':
-        filterString += ' ' + FILTER_QUALITY;
-        break;
-      case 'valued':
-        filterString += ' ' + FILTER_VALUED;
-        break;
-      default:
-    }
-  }
-
-  // Free text:
-  let freetext = url.searchParams.get("freetext");
-  if (freetext) {
-    filterString += ' ' + freetext;
-  }
-
-  return filterString;
 }
 
 // Initiate search:
