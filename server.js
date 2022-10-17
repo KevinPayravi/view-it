@@ -74,24 +74,45 @@ const FILTER_LARGE = 'fileres:>1000';
         filterString += ' ' + FILTER_CREATOR + qNum;
         break;
       case 'category':
-        await fetch('https://www.wikidata.org/w/api.php?action=wbgetclaims&property=P373&format=json&entity=' + qNum, {
-          method: 'GET',
-          headers: {
-            'Api-User-Agent': USER_AGENT
-          }
-        }).then((response) => response.json())
-          .then((data) => {
-            if (Object.keys(data['claims']).length === 0) {
-              returnBody['error'] = 'No corresponding category could be found ' + qNum;
-              res.json(returnBody);
-            } else {
-              const category = data['claims']['P373'][0]['mainsnak']['datavalue']['value'];
-              filterString += ' ' + FILTER_CATEGORY + '"' + category + '"';
+        const categoryPromise = new Promise(function(resolve, reject) {
+          fetch('https://www.wikidata.org/w/api.php?action=wbgetclaims&property=P373&format=json&entity=' + qNum, {
+            method: 'GET',
+            headers: {
+              'Api-User-Agent': USER_AGENT
             }
-          }).catch((error) => {
-            console.error('Error ', error);
-            returnBody['error'] = error;
-          });
+          }).then((response) => response.json())
+            .then((data) => {
+              if (Object.keys(data['claims']).length === 0) {
+                returnBody['error'] = 'No corresponding category could be found ' + qNum;
+                res.json(returnBody);
+              } else {
+                const category = data['claims']['P373'][0]['mainsnak']['datavalue']['value'];
+                filterString += ' ' + FILTER_CATEGORY + '"' + category + '"';
+
+                // Get list of subcategories:
+                fetch('https://commons.wikimedia.org/w/api.php?action=query&list=categorymembers&format=json&cmtype=subcat&cmlimit=500&cmtitle=Category:' + category, {
+                  method: 'GET',
+                  headers: {
+                    'Api-User-Agent': USER_AGENT
+                  }
+                }).then((response) => response.json())
+                  .then((data) => {
+                    const subcats = data['query']['categorymembers'].map(cat => cat.title);
+                    returnBody['subcategories'] = subcats;
+                    resolve();
+                  }).catch((error) => {
+                    console.error('Error ', error);
+                    returnBody['error'] = error;
+                    resolve();
+                  });
+              }
+            }).catch((error) => {
+              console.error('Error ', error);
+              returnBody['error'] = error;
+              resolve();
+            });
+        });
+        await categoryPromise;
         break;
       default:
         filterString += ' ' + FILTER_DEPICTS_OR_LINKED + qNum;

@@ -124,6 +124,9 @@ function generateHeader(qNum, returnTo) {
           case 'creator':
             imagesLabel = 'Images created by';
             break;
+          case 'category':
+            imagesLabel = 'Images in Commons category for';
+            break;
           default:
             imagesLabel = 'Images depicting or linked from';
         }
