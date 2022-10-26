@@ -1,8 +1,7 @@
 /* ELEMENT STYLING */
-
 body {
-  margin-top: 40px;
-  margin-bottom: 40px;
+  margin: 0px 0px 40px 0px;
+  padding: 0;
   font-family: "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   background: #f6f6f6;
 }
@@ -41,13 +40,53 @@ button:hover, input[type="button"]:hover {
   background-color: white;
   color: #005799;
 }
+button[type="submit"] {
+  width: 200px;
+}
+
+/* NAV STYLING */
+nav {
+  position: sticky;
+  background-color: #005799;
+  top: 0;
+  padding: 15px;
+  margin-bottom: 20px;
+  z-index: 99999;
+}
+nav .title {
+  color: white;
+  font-size: 1.4em;
+  font-weight: 600;
+}
+nav .links {
+  float: right;
+}
+nav ul {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  margin: 0px;
+}
+nav li {
+  list-style: none;
+  margin-right: 20px;
+  font-size: 1.2em;
+}
+nav a, nav a:visited {
+  color: white;
+}
 
 /* VISIBILITY CONTROL CLASSES */
 .advanced {
   display: none;
 }
 
-/* HEADER STYLING */
+/* SPLASH STYLING */
+#splashContainer {
+  display: none;
+  width: 100%;
+}
 .splash {
   width: 90%;
   max-width: 800px;
@@ -223,4 +262,21 @@ select {
 }
 #results .caption-bottom {
   bottom: 0px;
+}
+
+/* SUBCATS STYLING */
+#subcategories {
+  display: none; /* Displayed via JavaScript */
+  max-width: 800px;
+  margin: 0 auto;
+}
+#subcategoriesList {
+  display: none; /* Displayed via JavaScript */
+  column-count: 3;
+  column-width: 12em;
+}
+#subcategoriesList > div {
+  padding: 5px;
+  display: block;
+  break-inside: avoid-column;
 }

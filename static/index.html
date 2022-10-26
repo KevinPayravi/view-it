@@ -14,20 +14,33 @@
   <script src="index.js"></script> 
 
   <body>
-    <div id="splash" class="splash">
-      <div>
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/View_it%21_Tool_%28transparent%29.png/240px-View_it%21_Tool_%28transparent%29.png" alt="View it!" width="150px">
+    <nav>
+      <span class="title">
+        View it!
+      </span>
+      <div class="links">
+        <ul>
+          <li><a href="https://meta.wikimedia.org/wiki/View_it!_Tool" target="_blank">About</a></li>
+          <li><a href="https://meta.wikimedia.org/wiki/Talk:View_it!_Tool" target="_blank">Discuss</a></li>
+          <li><a href="https://github.com/KevinPayravi/view-it" target="_blank">Source</a></li>
+        </ul>
       </div>
-      <div>
-        <p>
-          View it! is a tool to show a catalog of images available on Wikimedia Commons for a given article across the various Wikipedia platforms. View it! increases discoverability of Commons uploads and encourages contributors to utilize Commons and <a href="https://commons.wikimedia.org/wiki/Commons:Structured_data">structured data</a>.</p>
-          <br/>
-          View our page on <a href="https://meta.wikimedia.org/wiki/View_it!_Tool">Meta Wiki</a> for details.
-        </p>
+    </nav>
+    <div id="splashContainer">
+      <div id="splash" class="splash">
+        <div>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/View_it%21_Tool_%28transparent%29.png/240px-View_it%21_Tool_%28transparent%29.png" alt="View it!" width="150px">
+        </div>
+        <div>
+          <p>
+            View it! is a tool to show a catalog of images available on Wikimedia Commons for a given article across the various Wikipedia platforms. View it! increases discoverability of Commons uploads and encourages contributors to utilize Commons and <a href="https://commons.wikimedia.org/wiki/Commons:Structured_data">structured data</a>.</p>
+            <br/>
+            View our page on <a href="https://meta.wikimedia.org/wiki/View_it!_Tool">Meta Wiki</a> for details.
+          </p>
+        </div>
       </div>
+      <hr />
     </div>
-
-    <hr />
 
     <div class="form">
       <label class="slider">
@@ -69,7 +82,7 @@
             <option value="large">Large (>1000px)</option>
           </select>
         </div>
-        <br/>
+        <br /><br />
         <button type="submit">Submit</button>
       </form>
     </div>
@@ -90,6 +103,12 @@
       <a id="returnToLink" href="">
         <button>Return to article</button>
       </a>
+      <div id="subcategories">
+        <button id="toggleSubcategories">View subcategories</button>
+        <br />
+        <div id="subcategoriesList"></div>
+        <br /><br />
+      </div>
     </div>
   </body>
 </html>

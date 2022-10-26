@@ -2,7 +2,8 @@
 // CONSTANTS
 //-------------------------------//
 
-const SITE_URL = 'https://view-it.toolforge.org/';
+const SITE_URL = 'http://localhost:3000/';
+// const SITE_URL = 'https://view-it.toolforge.org/';
 const IMG_WIDTH = '320';
 const IMG_HEIGHT = '200';
 const NUM_RESULTS = 20;
@@ -58,6 +59,10 @@ function startSearch() {
   document.getElementById('resolution').value = resolution || '';
   let freetext = url.searchParams.get("freetext");
   document.getElementById('freetext').value = freetext || '';
+  let category = url.searchParams.get("category");
+  if (category) {
+    category = category.replace('Category:', '');
+  }
 
   if (property || assessment || resolution || freetext) {
     toggleAdvancedSearch(true);
@@ -112,25 +117,32 @@ function generateHeader(qNum, returnTo) {
         const label = data['entities']['' + qNum]['labels']['en']['value'];
         const resultsHeader = document.getElementById('imagesDepicting');
         let url = new URL(window.location.href);
+        let category = url.searchParams.get("category");
         let property = url.searchParams.get("property");
         let imagesLabel = '';
-        switch (property) {
-          case 'depicts':
-            imagesLabel = 'Images depicting';
-            break;
-          case 'main':
-            imagesLabel = 'Images with main subject';
-            break;
-          case 'creator':
-            imagesLabel = 'Images created by';
-            break;
-          case 'category':
-            imagesLabel = 'Images in Commons category for';
-            break;
-          default:
-            imagesLabel = 'Images depicting or linked from';
+        if (category) {
+          category = category.replace('Category:', '');
+          resultsHeader.innerHTML = 'Images in Commons category <a href="https://commons.wikimedia.org/wiki/Category:' + category + '" target="_blank">' + category + '</a>';
         }
-        resultsHeader.innerHTML = imagesLabel + ' <a href="https://www.wikidata.org/wiki/' + qNum + '" target="_blank">' + qNum + '</a> (' + label + ')';
+        else {
+          switch (property) {
+            case 'depicts':
+              imagesLabel = 'Images depicting';
+              break;
+            case 'main':
+              imagesLabel = 'Images with main subject';
+              break;
+            case 'creator':
+              imagesLabel = 'Images created by';
+              break;
+            case 'category':
+              imagesLabel = 'Images in Commons category for';
+              break;
+            default:
+              imagesLabel = 'Images depicting or linked from';
+          }
+          resultsHeader.innerHTML = imagesLabel + ' <a href="https://www.wikidata.org/wiki/' + qNum + '" target="_blank">' + qNum + '</a> (' + label + ')';
+        }
       });
 
     // Show "back to article" button
@@ -145,7 +157,7 @@ function generateHeader(qNum, returnTo) {
 // Make a call to View it! API to get images:
 function getImages(qNum, offset) {
   let url = new URL(window.location.href);
-  const fetchImagesURL = new URL('https://view-it.toolforge.org/api/' + qNum);
+  const fetchImagesURL = new URL(SITE_URL + 'api/' + qNum);
   if (url.searchParams.get("property")) {
     fetchImagesURL.searchParams.append('property', url.searchParams.get("property"));
   }
@@ -157,6 +169,9 @@ function getImages(qNum, offset) {
   }
   if (url.searchParams.get("freetext")) {
     fetchImagesURL.searchParams.append('freetext', url.searchParams.get("freetext"));
+  }
+  if (url.searchParams.get("category")) {
+    fetchImagesURL.searchParams.append('category', url.searchParams.get("category").replace('Category:', ''));
   }
   if (offset) {
     fetchImagesURL.searchParams.append('offset', offset);
@@ -201,7 +216,6 @@ function getImages(qNum, offset) {
 
         // Display images on DOM
         images.forEach((image) => {
-          console.log(image);
           const container = document.createElement('div');
           container.classList.add('imageContainer');
           let ratio = IMG_HEIGHT / image.height;
@@ -236,8 +250,33 @@ function getImages(qNum, offset) {
           paginationButton.innerHTML = 'Load more images...';
           resultsElement.appendChild(paginationButton);
         }
+
+        // Output subcategories for category search
+        const subcats = data.subcategories;
+        if (subcats.length > 0) {
+          const subcatsContainer = document.getElementById('subcategoriesList');
+          subcats.forEach((subcat) => {
+            const linkText = document.createTextNode(subcat.replace('Category:', ''));
+            const div = document.createElement('div');
+            const a = document.createElement('a');
+            a.appendChild(linkText);
+            a.title = subcat.replace('Category:', '');
+            let url = new URL(window.location.href);
+            url.searchParams.set('category', subcat);
+            a.href = url;
+            div.appendChild(a);
+            subcatsContainer.appendChild(div);
+          });
+          document.getElementById('subcategories').style.display = 'block';
+        } else {
+          document.getElementById('subcategories').style.display = 'none';
+        }
       }
     });
+}
+
+function getSubcategoryImages(category) {
+  const fetchImagesURL = new URL(SITE_URL + 'api/' + qNum);
 }
 
 function toggleAdvancedSearch(toggled) {
@@ -261,7 +300,18 @@ function toggleAdvancedSearch(toggled) {
 }
 
 window.onload = function () {
+  let url = new URL(window.location.href);
+  let qNum = url.searchParams.get("q");
+  if (!qNum) {
+    document.getElementById('splashContainer').style.display = 'grid';
+  } else {
+    document.getElementById('splashContainer').style.display = 'none';
+  }
+
   startSearch();
+
+  // Clear subcategories section:
+  document.getElementById('subcategories').style.display = 'none';
 
   // Set advanced search to hidden or visible based on user preference:
   let advancedSearchSetting = localStorage.getItem('view-it-advanced-search');
@@ -284,4 +334,18 @@ window.onload = function () {
       toggleAdvancedSearch(false);
     }
   }, false);
+
+  // Listen for subcategories toggle
+  const subcategoriesList = document.getElementById('subcategoriesList');
+  subcategoriesList.style.display = 'none';
+  const subcategoriesToggle = document.getElementById('toggleSubcategories');
+  subcategoriesToggle.addEventListener('click', function (event) {    
+    if (subcategoriesList.style.display === 'none') {
+      subcategoriesList.style.display = 'inline-block';
+      subcategoriesToggle.innerHTML = 'Hide subcategories';
+    } else {
+      subcategoriesList.style.display = 'none';
+      subcategoriesToggle.innerHTML = 'View subcategories';
+    }
+  });
 }
