@@ -2,8 +2,7 @@
 // CONSTANTS
 //-------------------------------//
 
-const SITE_URL = 'http://localhost:3000/';
-// const SITE_URL = 'https://view-it.toolforge.org/';
+const SITE_URL = 'https://view-it.toolforge.org/';
 const IMG_WIDTH = '320';
 const IMG_HEIGHT = '200';
 const NUM_RESULTS = 20;
