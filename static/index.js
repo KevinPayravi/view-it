@@ -249,27 +249,27 @@ function getImages(qNum, offset) {
           paginationButton.innerHTML = 'Load more images...';
           resultsElement.appendChild(paginationButton);
         }
+      }
 
-        // Output subcategories for category search
-        const subcats = data.subcategories;
-        if (subcats.length > 0) {
-          const subcatsContainer = document.getElementById('subcategoriesList');
-          subcats.forEach((subcat) => {
-            const linkText = document.createTextNode(subcat.replace('Category:', ''));
-            const div = document.createElement('div');
-            const a = document.createElement('a');
-            a.appendChild(linkText);
-            a.title = subcat.replace('Category:', '');
-            let url = new URL(window.location.href);
-            url.searchParams.set('category', subcat);
-            a.href = url;
-            div.appendChild(a);
-            subcatsContainer.appendChild(div);
-          });
-          document.getElementById('subcategories').style.display = 'block';
-        } else {
-          document.getElementById('subcategories').style.display = 'none';
-        }
+      // Output subcategories for category search
+      const subcats = data.subcategories;
+      if (subcats.length > 0) {
+        const subcatsContainer = document.getElementById('subcategoriesList');
+        subcats.forEach((subcat) => {
+          const linkText = document.createTextNode(subcat.replace('Category:', ''));
+          const div = document.createElement('div');
+          const a = document.createElement('a');
+          a.appendChild(linkText);
+          a.title = subcat.replace('Category:', '');
+          let url = new URL(window.location.href);
+          url.searchParams.set('category', subcat);
+          a.href = url;
+          div.appendChild(a);
+          subcatsContainer.appendChild(div);
+        });
+        document.getElementById('subcategories').style.display = 'block';
+      } else {
+        document.getElementById('subcategories').style.display = 'none';
       }
     });
 }
