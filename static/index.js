@@ -253,7 +253,7 @@ function getImages(qNum, offset) {
 
       // Output subcategories for category search
       const subcats = data.subcategories;
-      if (subcats.length > 0) {
+      if (subcats && subcats.length > 0) {
         const subcatsContainer = document.getElementById('subcategoriesList');
         subcats.forEach((subcat) => {
           const linkText = document.createTextNode(subcat.replace('Category:', ''));
