@@ -2,12 +2,45 @@
 
 const fetch = require('node-fetch');
 const express = require('express');
+session = require("express-session");
+passport = require("passport");
+MediaWikiStrategy = require("passport-mediawiki-oauth").OAuthStrategy;
+config = require("./config");
+
 const app = express();
 const port = parseInt(process.env.PORT, 10);
 
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(session({
+  secret: "OAuth Session",
+  saveUninitialized: true,
+  resave: true
+}));
+
+passport.use(
+  new MediaWikiStrategy({
+    consumerKey: config.consumer_key,
+    consumerSecret: config.consumer_secret
+  },
+    function (token, tokenSecret, profile, done) {
+      profile.oauth = {
+        consumer_key: config.consumer_key,
+        consumer_secret: config.consumer_secret
+      };
+      return done(null, profile);
+    }
+  ));
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
+passport.deserializeUser(function (obj, done) {
+  done(null, obj);
+});
+
 // Constants:
 const LIMIT = 19;
-const USER_AGENT = 'View-it! [In Development] (https://view-it.toolforge.org/)';
+const USER_AGENT = 'View-it! (https://view-it.toolforge.org/)';
 const ORIGIN = '*';
 const IMG_WIDTH = '320';
 const IMG_HEIGHT = '200';
@@ -48,6 +81,34 @@ const FILTER_LARGE = 'fileres:>1000';
     next();
   });
 
+  // Authentication:
+  app.get("/login", function (req, res) {
+    res.redirect(req.baseUrl + "/auth/mediawiki/callback");
+  });
+  app.get("/auth/mediawiki/callback", function (req, res, next) {
+    passport.authenticate("mediawiki", function (err, user) {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return res.redirect(req.baseUrl + "/login");
+      }
+      req.logIn(user, function (err) {
+        if (err) {
+          return next(err);
+        }
+        req.session.user = user;
+        res.redirect(req.baseUrl + "/");
+        console.log(user);
+      });
+    })(req, res, next);
+  });
+  app.get( "/logout" , function ( req, res ) {
+    delete req.session.user;
+    res.redirect( req.baseUrl + "/" );
+  } );
+
+
   // API endpoint:
   app.get('/api/:qNum', async (req, res) => {
     const qNum = req.params.qNum;
@@ -68,7 +129,7 @@ const FILTER_LARGE = 'fileres:>1000';
       filterString += ' ' + FILTER_CATEGORY + '"' + category + '"';
 
       // Get list of subcategories:
-      const categoryPromise = new Promise(function(resolve, reject) {
+      const categoryPromise = new Promise(function (resolve, reject) {
         fetch('https://commons.wikimedia.org/w/api.php?action=query&list=categorymembers&format=json&cmtype=subcat&cmlimit=500&cmtitle=Category:' + category, {
           method: 'GET',
           headers: {
@@ -84,8 +145,8 @@ const FILTER_LARGE = 'fileres:>1000';
             returnBody['error'] = error;
             resolve();
           });
-        });
-        await categoryPromise;
+      });
+      await categoryPromise;
     } else {
       switch (req.query.property) {
         case 'depicts':
@@ -98,7 +159,7 @@ const FILTER_LARGE = 'fileres:>1000';
           filterString += ' ' + FILTER_CREATOR + qNum;
           break;
         case 'category':
-          const categoryPromise = new Promise(function(resolve, reject) {
+          const categoryPromise = new Promise(function (resolve, reject) {
             fetch('https://www.wikidata.org/w/api.php?action=wbgetclaims&property=P373&format=json&entity=' + qNum, {
               method: 'GET',
               headers: {
