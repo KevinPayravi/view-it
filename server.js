@@ -248,7 +248,7 @@ const FILTER_LARGE = 'fileres:>1000';
     fetchImagesURL.searchParams.append('gsrsearch', 'filetype:bitmap|drawing -fileres:0 ' + filterString);
     fetchImagesURL.searchParams.append('origin', ORIGIN);
 
-    fetch(fetchImagesURL, {
+    fetch(fetchImagesURL.toString(), {
       method: 'GET',
       headers: {
         'Api-User-Agent': USER_AGENT
@@ -280,7 +280,7 @@ const FILTER_LARGE = 'fileres:>1000';
           fetchThumbnailsURL.searchParams.append("prop", "imageinfo");
           fetchThumbnailsURL.searchParams.append("titles", imageTitlesStr);
 
-          fetch(fetchThumbnailsURL, {
+          fetch(fetchThumbnailsURL.toString(), {
             method: 'GET',
             headers: {
               'Api-User-Agent': USER_AGENT
