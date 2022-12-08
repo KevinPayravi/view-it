@@ -1,12 +1,12 @@
 /* eslint-env node, es6 */
 
 const express = require('express');
-const axios = require('axios');
-const ax = axios.create({
-  withCredentials: true,
-  responseType: 'json'
-});
-ax.defaults.withCredentials = true;
+// const axios = require('axios');
+// const ax = axios.create({
+//   withCredentials: true,
+//   responseType: 'json'
+// });
+// ax.defaults.withCredentials = true;
 const oauthFetch = require('oauth-fetch-json');
 const OAuth = require("oauth");
 fetch = require('node-fetch');
