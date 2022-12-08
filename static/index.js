@@ -266,11 +266,17 @@ function getImages(qNum, offset) {
         // Output pagination button as needed
         if (numResults > (offset + NUM_RESULTS)) {
           offset += 20;
-          const paginationButton = document.createElement('button');
-          paginationButton.id = 'paginationButton';
-          paginationButton.addEventListener("click", function () { getImages(qNum, offset) });
-          paginationButton.innerHTML = 'Load more images...';
-          resultsElement.appendChild(paginationButton);
+
+          const resultsContainer = document.getElementById('results');
+          function scrollListener(e) {
+            var elementOffset = resultsContainer.getBoundingClientRect().top - resultsContainer.offsetParent.getBoundingClientRect().top;
+            const top = window.pageYOffset + window.innerHeight - elementOffset;
+            if (top > resultsContainer.scrollHeight) {
+              window.removeEventListener('scroll', scrollListener);
+              getImages(qNum, offset);
+            }
+          }
+          window.addEventListener("scroll", scrollListener, { passive: false });
         }
       }
 
