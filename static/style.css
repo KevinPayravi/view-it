@@ -316,7 +316,7 @@ select {
   font-weight: 600;
   cursor: pointer;
 }
-.accordion:hover > label {
+.accordion > label:hover {
   background-color: #ccc;
 }
 .accordion > label::after {
