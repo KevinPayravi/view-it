@@ -362,6 +362,8 @@ window.onload = function () {
   let qNum = url.searchParams.get("q");
   if (!qNum) {
     document.getElementById('splashContainer').style.display = 'grid';
+    document.getElementById('searchAccordion').checked = true;
+    localStorage.setItem('view-it-search-accordion', 'open');
   } else {
     document.getElementById('splashContainer').style.display = 'none';
   }
@@ -370,6 +372,16 @@ window.onload = function () {
 
   // Clear subcategories section:
   document.getElementById('subcategories').style.display = 'none';
+
+  // Open search accordion if it was open on last use:
+  let searchAccordionSetting = localStorage.getItem('view-it-search-accordion');
+  if (searchAccordionSetting === null) {
+    localStorage.setItem('view-it-search-accordion', 'closed');
+    searchAccordionSetting = 'closed';
+  }
+  if (searchAccordionSetting === 'open') {
+    document.getElementById('searchAccordion').checked = true;
+  }
 
   // Set advanced search to hidden or visible based on user preference:
   let advancedSearchSetting = localStorage.getItem('view-it-advanced-search');
@@ -382,6 +394,16 @@ window.onload = function () {
   } else {
     toggleAdvancedSearch(false);
   }
+
+  // Listen for search accordion toggle:
+  const searchAccordion = document.getElementById('searchAccordion');
+  searchAccordion.addEventListener('click', function (event) {
+    if (event.target.checked) {
+      localStorage.setItem('view-it-search-accordion', 'open');
+    } else {
+      localStorage.setItem('view-it-search-accordion', 'closed');
+    }
+  }, false);
 
   // Listen for advanced search toggle
   const advancedSearchToggle = document.getElementById('toggleAdvancedSearch');

@@ -43,54 +43,60 @@
       <hr />
     </div>
 
-    <div class="form">
-      <label class="slider">
-        <input id="toggleAdvancedSearch" type="checkbox">
-        <span></span>
-        Advanced search
-      </label>
-      <br/><br/>
-      <form id="searchForm" onsubmit="return searchFromForm()">
-        <select name="property" class="advanced" id="property">
-          <option value="" selected>Depicts or linked from:</option>
-          <option value="depicts">Depicts (P180):</option>
-          <option value="main">Main subject (P921):</option>
-          <option value="creator">Created by (P170):</option>
-          <option value="category">Commons category (P373):</option>
-        </select>
-        <input id="qNumberInput" type="search" name="q" placeholder="Enter Wikidata Q-number">
-        <br/>
-        <div class="advanced">
-          <label for="freetext">Additional free text:</label>
-          <input id="freetext" type="search" name="freetext">
+    <div class="accordion">
+      <input id="searchAccordion" type="checkbox" />
+      <label for="searchAccordion">Search options</label>
+      <div class="accordianContents">
+        <div class="form">
+          <label class="slider">
+            <input id="toggleAdvancedSearch" type="checkbox">
+            <span></span>
+            Advanced search
+          </label>
+          <br/><br/>
+          <form id="searchForm" onsubmit="return searchFromForm()">
+            <select name="property" class="advanced" id="property">
+              <option value="" selected>Depicts or linked from:</option>
+              <option value="depicts">Depicts (P180):</option>
+              <option value="main">Main subject (P921):</option>
+              <option value="creator">Created by (P170):</option>
+              <option value="category">Commons category (P373):</option>
+            </select>
+            <input id="qNumberInput" type="search" name="q" placeholder="Enter Wikidata Q-number">
+            <br/>
+            <div class="advanced">
+              <label for="freetext">Additional free text:</label>
+              <input id="freetext" type="search" name="freetext">
+            </div>
+            <br/>
+            <div class="filter advanced">
+              <label for="assessment">Assessment:</label>
+              <select name="assessment" id="assessment">
+                <option value="" selected>Any</option>
+                <option value="featured">Featured</option>
+                <option value="quality">Quality</option>
+                <option value="valued">Valued</option>
+              </select>
+            </div>
+            <div class="filter advanced">
+              <label for="resolution">Resolution:</label>
+              <select name="resolution" id="resolution">
+                <option value="" selected>Any</option>
+                <option value="small">Small (<500px)</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large (>1000px)</option>
+              </select>
+            </div>
+            <br /><br />
+            <button type="submit">Submit</button>
+          </form>
         </div>
-        <br/>
-        <div class="filter advanced">
-          <label for="assessment">Assessment:</label>
-          <select name="assessment" id="assessment">
-            <option value="" selected>Any</option>
-            <option value="featured">Featured</option>
-            <option value="quality">Quality</option>
-            <option value="valued">Valued</option>
-          </select>
-        </div>
-        <div class="filter advanced">
-          <label for="resolution">Resolution:</label>
-          <select name="resolution" id="resolution">
-            <option value="" selected>Any</option>
-            <option value="small">Small (<500px)</option>
-            <option value="medium">Medium</option>
-            <option value="large">Large (>1000px)</option>
-          </select>
-        </div>
-        <br /><br />
-        <button type="submit">Submit</button>
-      </form>
+      </div>
     </div>
 
     <div id="error"></div>
 
-    <hr />
+    <br /><br />
 
     <div id="results">
       <div id="resultsHeader">
