@@ -3,11 +3,15 @@
 //-------------------------------//
 
 const SITE_URL = 'https://view-it.toolforge.org/';
+// const SITE_URL = 'http://localhost:3000/';
 const IMG_WIDTH = '320';
 const IMG_HEIGHT = '200';
 const NUM_RESULTS = 20;
 const USER_AGENT = 'View-it! [In Development] (https://view-it.toolforge.org/)';
 const ORIGIN = '*';
+
+// Flags:
+const toggleRemoveClaim = false;
 
 // Return if value is integer:
 function isInt(value) {
@@ -142,7 +146,9 @@ function generateHeader(qNum, returnTo) {
           }
           resultsHeader.innerHTML = imagesLabel + ' <a href="https://www.wikidata.org/wiki/' + qNum + '" target="_blank">' + qNum + '</a> (' + label + ')';
         }
-      });
+      }).catch((error) => {
+        console.error('Error ', error);
+      });;
 
     // Show "back to article" button
     if (returnTo) {
@@ -235,8 +241,25 @@ function getImages(qNum, offset) {
 
           a.appendChild(img);
           container.appendChild(a);
-          container.appendChild(captionBottom);
 
+          if (toggleRemoveClaim) {
+            const property = url.searchParams.get("property");
+            if (property == 'depicts' ||
+              property == 'main' ||
+              property == 'creator') {
+              let captionTop = document.createElement('div');
+              captionTop.classList.add('caption');
+              captionTop.classList.add('caption-top');
+              captionTop.classList.add('align-right');
+              let removeStatementLink = document.createElement('span');
+              removeStatementLink.innerHTML = 'Remove statement';
+              removeStatementLink.addEventListener("click", function () { removeStatement(image.name, property); });
+              captionTop.appendChild(removeStatementLink);
+              container.appendChild(captionTop);
+            }
+          }
+
+          container.appendChild(captionBottom);
           resultsElement.appendChild(container);
         });
 
@@ -271,7 +294,9 @@ function getImages(qNum, offset) {
       } else {
         document.getElementById('subcategories').style.display = 'none';
       }
-    });
+    }).catch((error) => {
+      console.error('Error ', error);
+    });;
 }
 
 function getSubcategoryImages(category) {
@@ -296,6 +321,40 @@ function toggleAdvancedSearch(toggled) {
       document.getElementById('freetext').value = '';
     }
   });
+}
+
+function removeStatement(image, propertyName) {
+  let property = '';
+  switch (propertyName) {
+    case 'depicts':
+      property = 'P180'
+      break;
+    case 'main':
+      property = 'P921'
+      break;
+    case 'creator':
+      property = 'P170'
+      break;
+  }
+
+  if (confirm('Would you like to remove the ' + propertyName + ' statement (' + property + ') from ' + image + '?') === true) {
+    // Make a call to View it! API to remove statement:
+    const removeStatementURL = new URL(SITE_URL + 'remove');
+    removeStatementURL.searchParams.append('file', image);
+    removeStatementURL.searchParams.append('property', property);
+    fetch(removeStatementURL, {
+      method: 'GET',
+      headers: new Headers({
+        'Api-User-Agent': USER_AGENT,
+        'Content-Type': 'application/json'
+      })
+    }).then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      }).catch((error) => {
+        console.error('Error ', error);
+      });
+  }
 }
 
 window.onload = function () {
@@ -338,7 +397,7 @@ window.onload = function () {
   const subcategoriesList = document.getElementById('subcategoriesList');
   subcategoriesList.style.display = 'none';
   const subcategoriesToggle = document.getElementById('toggleSubcategories');
-  subcategoriesToggle.addEventListener('click', function (event) {    
+  subcategoriesToggle.addEventListener('click', function (event) {
     if (subcategoriesList.style.display === 'none') {
       subcategoriesList.style.display = 'inline-block';
       subcategoriesToggle.innerHTML = 'Hide subcategories';

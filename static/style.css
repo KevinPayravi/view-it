@@ -1,3 +1,14 @@
+/* ALIGNMENT CLASSES */
+.align-right {
+  text-align: right;
+}
+.align-left {
+  text-align: left;
+}
+.align-center {
+  text-align: center;
+}
+
 /* ELEMENT STYLING */
 body {
   margin: 0px 0px 40px 0px;
