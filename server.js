@@ -15,9 +15,11 @@ passport = require("passport");
 MediaWikiStrategy = require("passport-mediawiki-oauth").OAuthStrategy;
 config = require("./config");
 
+const cors = require('cors')
 const app = express();
 const port = parseInt(process.env.PORT, 10);
 
+app.use(cors())
 app.use(session({
   secret: config.consumer_secret,
   cookie: {
@@ -27,7 +29,6 @@ app.use(session({
   resave: true,
   saveUninitialized: true,
 }));
-
 app.use(passport.initialize());
 app.use(passport.session());
 
