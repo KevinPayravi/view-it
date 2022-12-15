@@ -369,7 +369,6 @@ window.onload = function () {
   if (!qNum) {
     document.getElementById('splashContainer').style.display = 'grid';
     document.getElementById('searchAccordion').checked = true;
-    localStorage.setItem('view-it-search-accordion', 'open');
   } else {
     document.getElementById('splashContainer').style.display = 'none';
   }
