@@ -236,17 +236,52 @@ const FILTER_LARGE = 'fileres:>1000';
             .then((data) => {
               let pages = data['query']['pages'];
 
-              for (const image in pages) {
-                returnBody.results.push({
-                  'image': pages[image]['imageinfo']['0']['descriptionurl'],
-                  'thumb': pages[image]['imageinfo']['0']['thumburl'],
-                  'title': pages[image]['title'].replace('File:', ''),
-                  'width': pages[image]['imageinfo']['0']['thumbwidth'],
-                  'height': pages[image]['imageinfo']['0']['thumbheight']
-                })
-              }
+              // Get captions if user requested them
+              if (req.query.captions && req.query.captions === 'true') {
+                const fetchCaptionsURL = new URL("https://commons.wikimedia.org/w/api.php")
+                fetchCaptionsURL.searchParams.append("action", "wbgetentities");
+                fetchCaptionsURL.searchParams.append("format", "json");
+                fetchCaptionsURL.searchParams.append("sites", "commonswiki");
+                fetchCaptionsURL.searchParams.append("titles", imageTitlesStr);
+                fetchCaptionsURL.searchParams.append("props", "labels");
+                fetch(fetchCaptionsURL.toString(), {
+                  method: 'GET',
+                  headers: {
+                    'User-Agent': USER_AGENT,
+                    'Api-User-Agent': USER_AGENT
+                  }
+                }).then((response) => response.json())
+                  .then((data) => {
+                    let captions = data['entities'];
+                    for (const image in pages) {
+                      returnBody.results.push({
+                        'image': pages[image]['imageinfo']['0']['descriptionurl'],
+                        'thumb': pages[image]['imageinfo']['0']['thumburl'],
+                        'title': pages[image]['title'].replace('File:', ''),
+                        'width': pages[image]['imageinfo']['0']['thumbwidth'],
+                        'height': pages[image]['imageinfo']['0']['thumbheight'],
+                        'captions': captions['M' + pages[image]['pageid']]['labels']
+                      })
+                    }
 
-              res.json(returnBody);
+                    res.json(returnBody);
+                  }).catch((error) => {
+                    console.error('Error: ', error);
+                    returnBody['error'] = error;
+                  });
+              } else {
+                for (const image in pages) {
+                  returnBody.results.push({
+                    'image': pages[image]['imageinfo']['0']['descriptionurl'],
+                    'thumb': pages[image]['imageinfo']['0']['thumburl'],
+                    'title': pages[image]['title'].replace('File:', ''),
+                    'width': pages[image]['imageinfo']['0']['thumbwidth'],
+                    'height': pages[image]['imageinfo']['0']['thumbheight']
+                  })
+                }
+  
+                res.json(returnBody);
+              }
             }).catch((error) => {
               console.error('Error: ', error);
               returnBody['error'] = error;
