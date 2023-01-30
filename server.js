@@ -1,60 +1,13 @@
 /* eslint-env node, es6 */
 
 const express = require('express');
-// const axios = require('axios');
-// const ax = axios.create({
-//   withCredentials: true,
-//   responseType: 'json'
-// });
-// ax.defaults.withCredentials = true;
-const oauthFetch = require('oauth-fetch-json');
-const OAuth = require("oauth");
-fetch = require('node-fetch');
-session = require("express-session");
-passport = require("passport");
-MediaWikiStrategy = require("passport-mediawiki-oauth").OAuthStrategy;
-config = require("./config");
+const fetch = require('node-fetch');
 
 const cors = require('cors')
 const app = express();
 const port = parseInt(process.env.PORT, 10);
 
 app.use(cors())
-app.use(session({
-  secret: config.consumer_secret,
-  cookie: {
-    // 7 days
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  },
-  resave: true,
-  saveUninitialized: true,
-}));
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.use(
-  new MediaWikiStrategy({
-    consumerKey: config.consumer_key,
-    consumerSecret: config.consumer_secret,
-    baseURL: 'https://commons.wikimedia.org/',
-    callbackURL: 'https://view-it.toolforge.org/auth/mediawiki/callback'
-  },
-    function (token, tokenSecret, profile, done) {
-      profile.oauth = {
-        consumer_key: config.consumer_key,
-        consumer_secret: config.consumer_secret,
-        token,
-        token_secret: tokenSecret
-      };
-      return done(null, profile);
-    }
-  ));
-passport.serializeUser(function (user, done) {
-  done(null, user);
-});
-passport.deserializeUser(function (obj, done) {
-  done(null, obj);
-});
 
 // Constants:
 const LIMIT = 19;
@@ -96,111 +49,6 @@ const FILTER_LARGE = 'fileres:>1000';
       console.log('Query: Unknown');
     }
     next();
-  });
-
-  // Authentication:
-  app.get('/login', passport.authenticate('mediawiki'));
-  app.get('/auth/mediawiki/callback',
-    passport.authenticate('mediawiki', { failureRedirect: '/login' }),
-    function (req, res) {
-      res.redirect('/');
-    });
-
-  app.get("/logout", function (req, res) {
-    delete req.session.user;
-    res.redirect(req.baseUrl + "/");
-  });
-
-  app.get('/remove', async (req, res) => {
-    let session = req.session;
-    let oauth_token = req.session['oauth:mediawiki'].oauth_token;
-    let oauth_secret = req.session['oauth:mediawiki'].oauth_token_secret;
-    let file = req.query.file;
-    let property = req.query.property;
-
-    // Get ID of claim to remove:
-    let claimID = '';
-    const claimPromise = new Promise(function (resolve, reject) {
-      // Get list of entites for given file:
-      let getEntitiesURL = new URL('https://commons.wikimedia.org/w/api.php');
-      getEntitiesURL.searchParams.append('action', 'wbgetentities');
-      getEntitiesURL.searchParams.append('format', 'json');
-      getEntitiesURL.searchParams.append('sites', 'commonswiki');
-      getEntitiesURL.searchParams.append('titles', 'File:' + file);
-      getEntitiesURL.searchParams.append('props', '');
-      getEntitiesURL.searchParams.append('formatversion', '2');
-
-      fetch(getEntitiesURL.toString(), {
-        method: 'GET',
-        headers: {
-          'User-Agent': USER_AGENT,
-          'Api-User-Agent': USER_AGENT
-        }
-      }).then((response) => response.json())
-        .then((data) => {
-          mNumber = Object.keys(data.entities)[0];
-
-          // Get list of claims:
-          let getClaimsURL = new URL('https://commons.wikimedia.org/w/api.php');
-          getClaimsURL.searchParams.append('action', 'wbgetclaims');
-          getClaimsURL.searchParams.append('format', 'json');
-          getClaimsURL.searchParams.append('entity', mNumber);
-          getClaimsURL.searchParams.append('property', property);
-          getClaimsURL.searchParams.append('props', '');
-          getClaimsURL.searchParams.append('formatversion', '2');
-          fetch(getClaimsURL.toString(), {
-            method: 'GET',
-            headers: {
-              'User-Agent': USER_AGENT,
-              'Api-User-Agent': USER_AGENT
-            }
-          }).then((response) => response.json())
-            .then((data) => {
-              // Filter for desired claim ID:
-              claimID = data.claims[Object.keys(data.claims)[0]].filter(element => element.mainsnak.property === property)[0].id;
-              resolve();
-            }).catch((error) => {
-              console.error('Error ', error);
-              reject();
-            });
-        }).catch((error) => {
-          console.error('Error ', error);
-          reject();
-        });
-    });
-    await claimPromise;
-
-    // Get CSRF token:
-    oauthFetch('https://commons.wikimedia.org/w/api.php',
-      {
-        action: 'query',
-        format: 'json',
-        meta: 'tokens'
-      },
-      {},
-      req.session).then(function (data) {
-        console.log(data);
-        token = data.query.tokens.csrftoken;
-
-        // Remove claim:
-        let removeClaimURL = new URL('https://commons.wikimedia.org/w/api.php');
-        oauthFetch(removeClaimURL.toString(),
-          {
-            action: 'wbremoveclaims',
-            claim: claimID,
-            'format': 'json'
-          },
-          {
-            token: token,
-            method: 'POST'
-          },
-          req.session).then(function (data) {
-            console.log(data);
-            res.setHeader('Content-Type', 'application/json');
-            res.status(200);
-            res.send(JSON.stringify(data));
-          });
-      });
   });
 
   // API endpoint:
