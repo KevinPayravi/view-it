@@ -263,20 +263,26 @@ function getImages(qNum, offset) {
           resultsElement.appendChild(container);
         });
 
-        // Output pagination button as needed
+        // Manage loading more images as user scrolls
         if (numResults > (offset + NUM_RESULTS)) {
           offset += 20;
 
           const resultsContainer = document.getElementById('results');
-          function scrollListener(e) {
-            var elementOffset = resultsContainer.getBoundingClientRect().top - resultsContainer.offsetParent.getBoundingClientRect().top;
-            const top = window.pageYOffset + window.innerHeight - elementOffset;
-            if (top > resultsContainer.scrollHeight) {
-              window.removeEventListener('scroll', scrollListener);
-              getImages(qNum, offset);
+          const elementOffset = resultsContainer.getBoundingClientRect().top - resultsContainer.offsetParent.getBoundingClientRect().top;
+          const top = window.pageYOffset + window.innerHeight - elementOffset;
+          if (top > resultsContainer.scrollHeight) {
+            getImages(qNum, offset);
+          } else {
+            function scrollListener(e) {
+              const elementOffset = resultsContainer.getBoundingClientRect().top - resultsContainer.offsetParent.getBoundingClientRect().top;
+              const top = window.pageYOffset + window.innerHeight - elementOffset;
+              if (top > resultsContainer.scrollHeight) {
+                window.removeEventListener('scroll', scrollListener);
+                getImages(qNum, offset);
+              }
             }
+            window.addEventListener("scroll", scrollListener, { passive: false });
           }
-          window.addEventListener("scroll", scrollListener, { passive: false });
         }
       }
 
@@ -302,7 +308,7 @@ function getImages(qNum, offset) {
       }
     }).catch((error) => {
       console.error('Error ', error);
-    });;
+    });
 }
 
 function getSubcategoryImages(category) {
