@@ -1,8 +1,6 @@
 /* eslint-env node, es6 */
 
 const express = require('express');
-const fetch = require('node-fetch');
-
 const cors = require('cors')
 const app = express();
 const port = parseInt(process.env.PORT, 10) || 3000;
