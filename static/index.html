@@ -62,7 +62,10 @@
               <option value="creator">Created by (P170):</option>
               <option value="category">Commons category (P373):</option>
             </select>
-            <input id="qNumberInput" type="search" name="q" placeholder="Enter Wikidata Q-number">
+            <div id="qInputWrapper">
+              <input id="qNumberInput" type="search" name="q" placeholder="Q-number or search by label" autocomplete="off">
+              <ul id="qSuggestions"></ul>
+            </div>
             <br/>
             <div class="advanced">
               <label for="freetext">Additional free text:</label>

@@ -203,6 +203,55 @@ select {
   transform: translateX(12px);
 }
 
+/* Q-NUMBER INPUT SUGGESTIONS */
+#qInputWrapper {
+  position: relative;
+  display: inline-block;
+}
+#qSuggestions {
+  display: none;
+  position: fixed;
+  z-index: 999999;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 0 0 5px 5px;
+  max-height: 300px;
+  overflow-y: auto;
+  max-width: 420px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  text-align: left;
+}
+#qSuggestions li {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+#qSuggestions li:last-child {
+  border-bottom: none;
+}
+#qSuggestions li:hover {
+  background-color: #f0f7ff;
+}
+.suggestion-qid {
+  font-size: 0.75em;
+  color: #888;
+}
+.suggestion-label {
+  font-weight: 600;
+}
+.suggestion-desc {
+  font-size: 0.85em;
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ERROR STYLING */
 #error {
   color: red;

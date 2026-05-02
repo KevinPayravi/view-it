@@ -5,13 +5,93 @@
 const SITE_URL = 'https://view-it.toolforge.org/';
 // const SITE_URL = 'http://localhost:3000/';
 const IMG_WIDTH = '320';
-const IMG_HEIGHT = '200';
+const IMG_HEIGHT = 200;
 const NUM_RESULTS = 20;
 const USER_AGENT = 'View-it! [In Development] (https://view-it.toolforge.org/)';
 const ORIGIN = '*';
 
 // Flags:
 const toggleRemoveClaim = false;
+
+// Wikidata entity suggestions:
+let suggestionTimer = null;
+let suggestionAbortController = null;
+let labelCache = null; // { qNum, label }
+
+function fetchSuggestions(query) {
+  if (!query || query.trim().length < 2) {
+    hideSuggestions();
+    return;
+  }
+  if (suggestionAbortController) {
+    suggestionAbortController.abort();
+  }
+  suggestionAbortController = new AbortController();
+  const searchURL = new URL('https://www.wikidata.org/w/api.php');
+  searchURL.searchParams.set('action', 'wbsearchentities');
+  searchURL.searchParams.set('search', query.trim());
+  searchURL.searchParams.set('language', 'en');
+  searchURL.searchParams.set('format', 'json');
+  searchURL.searchParams.set('origin', ORIGIN);
+  searchURL.searchParams.set('limit', '10');
+
+  fetch(searchURL, {
+    signal: suggestionAbortController.signal,
+    headers: new Headers({ 'Api-User-Agent': USER_AGENT })
+  }).then((r) => r.json())
+    .then((data) => showSuggestions(data.search || []))
+    .catch((err) => { if (err.name !== 'AbortError') console.error('Suggestion error:', err); });
+}
+
+function showSuggestions(items) {
+  const list = document.getElementById('qSuggestions');
+  list.innerHTML = '';
+  if (items.length === 0) {
+    list.style.display = 'none';
+    return;
+  }
+  const input = document.getElementById('qNumberInput');
+  const rect = input.getBoundingClientRect();
+  list.style.top = rect.bottom + 'px';
+  list.style.left = rect.left + 'px';
+  list.style.width = rect.width + 'px';
+  items.forEach((item) => {
+    const li = document.createElement('li');
+
+    const qid = document.createElement('span');
+    qid.className = 'suggestion-qid';
+    qid.textContent = item.id;
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'suggestion-label';
+    labelSpan.textContent = item.label || item.id;
+
+    li.appendChild(qid);
+    li.appendChild(labelSpan);
+
+    if (item.description) {
+      const desc = document.createElement('span');
+      desc.className = 'suggestion-desc';
+      desc.textContent = item.description;
+      li.appendChild(desc);
+    }
+
+    li.addEventListener('mousedown', function (e) {
+      e.preventDefault(); // prevent blur before selection
+      document.getElementById('qNumberInput').value = item.id;
+      labelCache = { qNum: item.id, label: item.label || item.id };
+      hideSuggestions();
+    });
+    list.appendChild(li);
+  });
+  list.style.display = 'block';
+}
+
+function hideSuggestions() {
+  const list = document.getElementById('qSuggestions');
+  list.innerHTML = '';
+  list.style.display = 'none';
+}
 
 // Return if value is integer:
 function isInt(value) {
@@ -109,15 +189,16 @@ function generateHeader(qNum, returnTo) {
     resultsHeaderLink.href = 'https://www.wikidata.org/wiki/' + qNum;
     resultsHeaderLink.innerHTML = qNum;
 
-    // Get Q-number details
-    fetch('https://www.wikidata.org/w/api.php?action=wbgetentities&ids=' + qNum + '&props=labels&languages=en&format=json&origin=' + ORIGIN, {
-      method: 'GET',
-      headers: new Headers({
-        'Api-User-Agent': USER_AGENT
-      })
-    }).then((response) => response.json())
-      .then((data) => {
-        const label = data['entities']['' + qNum]['labels']['en']['value'];
+    // Get label — use cached value if available from suggestion selection
+    const labelPromise = (labelCache && labelCache.qNum === qNum)
+      ? Promise.resolve(labelCache.label)
+      : fetch('https://www.wikidata.org/w/api.php?action=wbgetentities&ids=' + qNum + '&props=labels&languages=en&format=json&origin=' + ORIGIN, {
+          method: 'GET',
+          headers: new Headers({ 'Api-User-Agent': USER_AGENT })
+        }).then((r) => r.json())
+          .then((data) => data['entities'][qNum]['labels']['en']['value']);
+
+    labelPromise.then((label) => {
         const resultsHeader = document.getElementById('imagesDepicting');
         let url = new URL(window.location.href);
         let category = url.searchParams.get("category");
@@ -160,7 +241,7 @@ function generateHeader(qNum, returnTo) {
         }
       }).catch((error) => {
         console.error('Error ', error);
-      });;
+      });
 
     // Show "back to article" button
     if (returnTo) {
@@ -219,38 +300,25 @@ function getImages(qNum, offset) {
         const resultsElement = document.getElementById('results');
         resultsElement.style.display = 'block';
 
-        let images = [];
-        let results = data.results;
-        results.forEach((image) => {
-          images.push({
-            'page': image.image,
-            'name': image.title,
-            'thumb': image.thumb,
-            'width': image.width,
-            'height': image.height
-          });
-        });
-
         // Display images on DOM
-        images.forEach((image) => {
+        data.results.forEach((image) => {
           const container = document.createElement('div');
           container.classList.add('imageContainer');
           let ratio = IMG_HEIGHT / image.height;
           container.style.width = (image.width * ratio) + 'px';
 
           const a = document.createElement('a');
-          a.href = image.page;
-          a.title = image.name;
+          a.href = image.image;
+          a.title = image.title;
           a.target = '_blank';
 
           let img = document.createElement('img');
           img.src = image.thumb;
-          img.alt = image.name;
+          img.alt = image.title;
 
           let captionBottom = document.createElement('div');
-          captionBottom.classList.add('caption');
-          captionBottom.classList.add('caption-bottom');
-          captionBottom.textContent = image.name;
+          captionBottom.classList.add('caption', 'caption-bottom');
+          captionBottom.textContent = image.title;
 
           a.appendChild(img);
           container.appendChild(a);
@@ -261,12 +329,10 @@ function getImages(qNum, offset) {
               property == 'main' ||
               property == 'creator') {
               let captionTop = document.createElement('div');
-              captionTop.classList.add('caption');
-              captionTop.classList.add('caption-top');
-              captionTop.classList.add('align-right');
+              captionTop.classList.add('caption', 'caption-top', 'align-right');
               let removeStatementLink = document.createElement('span');
               removeStatementLink.innerHTML = 'Remove statement';
-              removeStatementLink.addEventListener("click", function () { removeStatement(image.name, property); });
+              removeStatementLink.addEventListener("click", function () { removeStatement(image.title, property); });
               captionTop.appendChild(removeStatementLink);
               container.appendChild(captionTop);
             }
@@ -278,9 +344,9 @@ function getImages(qNum, offset) {
 
         // Manage loading more images as user scrolls
         if (numResults > (offset + NUM_RESULTS)) {
-          offset += 20;
+          offset += NUM_RESULTS;
 
-          const resultsContainer = document.getElementById('results');
+          const resultsContainer = resultsElement;
           const elementOffset = resultsContainer.getBoundingClientRect().top - resultsContainer.offsetParent.getBoundingClientRect().top;
           const top = window.scrollY + window.innerHeight - elementOffset;
           if (top > resultsContainer.scrollHeight) {
@@ -418,6 +484,16 @@ window.onload = function () {
   } else {
     toggleAdvancedSearch(false);
   }
+
+  // Wire up Q-number input for live suggestions
+  const qInput = document.getElementById('qNumberInput');
+  qInput.addEventListener('input', function () {
+    clearTimeout(suggestionTimer);
+    suggestionTimer = setTimeout(() => fetchSuggestions(this.value), 300);
+  });
+  qInput.addEventListener('blur', function () {
+    setTimeout(hideSuggestions, 200);
+  });
 
   // Listen for search accordion toggle:
   const searchAccordion = document.getElementById('searchAccordion');
