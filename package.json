@@ -6,7 +6,7 @@
   "scripts": {
     "test": "env PORT=3000 nodemon server.js",
     "start": "node server.js",
-    "deploy": "toolforge webservice --backend=kubernetes node24 restart",
+    "deploy": "toolforge webservice --backend=kubernetes node20 restart",
     "logs": "kubectl logs -f $(kubectl get pods | tail -1 | cut -d ' ' -f 1)"
   },
   "repository": {
@@ -17,7 +17,7 @@
   "license": "MIT",
   "homepage": "",
   "engines": {
-    "node": ">=24"
+    "node": ">=20"
   },
   "dependencies": {
     "cors": "^2.8.6",
