@@ -5,7 +5,7 @@ const fetch = require('node-fetch');
 
 const cors = require('cors')
 const app = express();
-const port = parseInt(process.env.PORT, 10);
+const port = parseInt(process.env.PORT, 10) || 3000;
 
 app.use(cors())
 
@@ -210,7 +210,7 @@ const FILTER_LARGE = 'fileres:>1000';
 
           // Built pipe-separated string of image titles
           let imageTitlesArray = [];
-          returnedImages = data['__main__']['result']['hits']['hits'];
+          const returnedImages = data['__main__']['result']['hits']['hits'];
           for (let i = 0; i < returnedImages.length; i++) {
             imageTitlesArray.push('File:' + returnedImages[i]['_source']['title']);
           }

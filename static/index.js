@@ -125,7 +125,12 @@ function generateHeader(qNum, returnTo) {
         let imagesLabel = '';
         if (category) {
           category = category.replace('Category:', '');
-          resultsHeader.innerHTML = 'Images in Commons category <a href="https://commons.wikimedia.org/wiki/Category:' + category + '" target="_blank">' + category + '</a>';
+          resultsHeader.textContent = 'Images in Commons category ';
+          const catLink = document.createElement('a');
+          catLink.href = 'https://commons.wikimedia.org/wiki/Category:' + category;
+          catLink.target = '_blank';
+          catLink.textContent = category;
+          resultsHeader.appendChild(catLink);
         }
         else {
           switch (property) {
@@ -144,7 +149,14 @@ function generateHeader(qNum, returnTo) {
             default:
               imagesLabel = 'Images depicting or linked from';
           }
-          resultsHeader.innerHTML = imagesLabel + ' <a href="https://www.wikidata.org/wiki/' + qNum + '" target="_blank">' + qNum + '</a> (' + label + ')';
+          resultsHeader.textContent = '';
+          resultsHeader.appendChild(document.createTextNode(imagesLabel + ' '));
+          const qLink = document.createElement('a');
+          qLink.href = 'https://www.wikidata.org/wiki/' + qNum;
+          qLink.target = '_blank';
+          qLink.textContent = qNum;
+          resultsHeader.appendChild(qLink);
+          resultsHeader.appendChild(document.createTextNode(' (' + label + ')'));
         }
       }).catch((error) => {
         console.error('Error ', error);
@@ -233,11 +245,12 @@ function getImages(qNum, offset) {
 
           let img = document.createElement('img');
           img.src = image.thumb;
+          img.alt = image.name;
 
           let captionBottom = document.createElement('div');
           captionBottom.classList.add('caption');
           captionBottom.classList.add('caption-bottom');
-          captionBottom.innerHTML = image.name;
+          captionBottom.textContent = image.name;
 
           a.appendChild(img);
           container.appendChild(a);
@@ -269,19 +282,19 @@ function getImages(qNum, offset) {
 
           const resultsContainer = document.getElementById('results');
           const elementOffset = resultsContainer.getBoundingClientRect().top - resultsContainer.offsetParent.getBoundingClientRect().top;
-          const top = window.pageYOffset + window.innerHeight - elementOffset;
+          const top = window.scrollY + window.innerHeight - elementOffset;
           if (top > resultsContainer.scrollHeight) {
             getImages(qNum, offset);
           } else {
             function scrollListener(e) {
               const elementOffset = resultsContainer.getBoundingClientRect().top - resultsContainer.offsetParent.getBoundingClientRect().top;
-              const top = window.pageYOffset + window.innerHeight - elementOffset;
+              const top = window.scrollY + window.innerHeight - elementOffset;
               if (top > resultsContainer.scrollHeight) {
                 window.removeEventListener('scroll', scrollListener);
                 getImages(qNum, offset);
               }
             }
-            window.addEventListener("scroll", scrollListener, { passive: false });
+            window.addEventListener("scroll", scrollListener, { passive: true });
           }
         }
       }
